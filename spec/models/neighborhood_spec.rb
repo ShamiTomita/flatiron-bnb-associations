@@ -1,33 +1,44 @@
-require 'rails_helper'
-
 describe Neighborhood do
-  let(:nyc) { City.create(name: 'NYC') }
-  let(:brighton_beach) { Neighborhood.create(name: 'Brighton Beach', city: nyc) }
+  describe 'associations' do
+    it 'has a name' do
+      expect(@nabe3.name).to eq('Brighton Beach')
+    end
 
-  it 'has a name' do
-    expect(brighton_beach.name).to eq('Brighton Beach')
-  end
-
-  it 'belongs to a city' do
-    expect(brighton_beach.city).to be(nyc)
-  end
-
-  context "listings" do
-    let(:user) { User.create(name: "Arel") }
-    let!(:listing) do
-      Listing.create(
-        address: '44 Ridge Lane',
-        listing_type: "whole house",
-        title: "Beautiful Home on Mountain",
-        description: "Whole house for rent on mountain. Many bedrooms.",
-        price: 200.00,
-        neighborhood: brighton_beach,
-        host: user
-      )
+    it 'belongs to a city' do
+      expect(@nabe3.city.name).to eq('NYC')
     end
 
     it 'has many listings' do
-      expect(brighton_beach.listings).to eq([listing])
+      expect(@nabe3.listings).to include(@listing3)
+    end
+  end
+
+  describe 'instance methods' do
+    it 'knows about all the available listings given a date range' do
+      expect(@nabe1.neighborhood_openings('2014-05-01', '2014-05-05')).to include(@listing2)
+      expect(@nabe1.neighborhood_openings('2014-05-01', '2014-05-05')).to_not include(@listing1)
+    end
+  end
+
+  describe 'class methods' do
+    describe ".highest_ratio_res_to_listings" do
+      it 'knows the neighborhood with the highest ratio of reservations to listings' do
+        expect(Neighborhood.highest_ratio_res_to_listings).to eq(@nabe1)
+      end
+      it "doesn't hardcode the neighborhood with the highest ratio" do
+        make_denver
+        expect(Neighborhood.highest_ratio_res_to_listings).to eq(Neighborhood.find_by(:name => "Lakewood"))
+      end
+    end
+
+    describe ".most_res" do
+      it 'knows the neighborhood with the most reservations' do
+        expect(Neighborhood.most_res).to eq(@nabe1)
+      end
+      it "doesn't hardcode the neighborhood with the most reservations" do
+        make_denver
+        expect(Neighborhood.most_res).to eq(Neighborhood.find_by(:name => "Lakewood"))
+      end
     end
   end
 end
